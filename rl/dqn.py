@@ -31,12 +31,11 @@ class DQN:
     :param eps_change_length: (int) The number of episodes that is taken to change epsilon.
     """
     
-    def __init__(self, env, window_size=12, replay_buffer_size=1000, replay_batch_size=512, n_replay_epoch=1, learning_starts=1000, learning_rate=0.01, gamma=0.99, initial_eps=1.0, final_eps=0.01, eps_change_length=1000, load_Qfunc=False, Qfunc_path=None, use_target_network=False, use_doubleDQN=False, update_interval=100, target_update_interval=500, use_dueling=False, load_model=False, load_model_path=None):
+    def __init__(self, env, replay_buffer_size=1000000, replay_batch_size=32, n_replay_epoch=1, learning_starts=10000, learning_rate=0.0001, gamma=0.99, initial_eps=1.0, final_eps=0.05, eps_change_length=1000, load_Qfunc=False, Qfunc_path=None, use_target_network=False, use_doubleDQN=False, update_interval=4, target_update_interval=20000, use_dueling=False, load_model=False, load_model_path=None):
         """
         Environment
         """
         self._env = env
-        self._window_size = window_size
         self._n_action = self._env.action_space.n
         
         """

@@ -11,28 +11,27 @@ def main():
     window_length = 12
     env = gym.make('SimpleTrading-v0', window_length=window_length)
     #env.random_play()
+    #sys.exit()
 
     model = DQN(
             env=env, 
-            window_size=window_length,
-            use_target_network=False,
-            use_doubleDQN=False, 
+            use_target_network=True,
+            use_doubleDQN=True, 
             use_dueling=True,
             initial_eps=0.8,
-            update_interval=4,
             target_update_interval=20000,
-            replay_buffer_size=1000000,
             final_eps=0.05,
-            learning_starts=1000,
-            replay_batch_size=4,
+            eps_change_length=1000,
             learning_rate=0.01,
+            gamma=0.99,
 
             #learning_starts=1,
             #update_interval=1,
             #target_update_interval=1,
             #replay_batch_size=4
             )
-    #model.test_episode()
+    #eval_env = gym.make('SimpleTrading-v0', window_length=window_length)
+    #model.test_episode(eval_env)
     #sys.exit()
 
     history = model.learn(200000)
