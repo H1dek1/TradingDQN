@@ -1,4 +1,5 @@
 /.venv/
+/.venv3.8/
 /.python-version
 /simple_trading/
 /rl/__pycache__/
