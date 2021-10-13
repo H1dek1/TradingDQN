@@ -4,7 +4,7 @@ import gym
 import simple_trading
 
 def main():
-    action_list = [0, 0, 1, 0, 2]
+    action_list = [0, 0, 1, 0, 0, 0, 2]
     env = gym.make('SimpleTrading-v0')
     #env.debug()
     #env.random_play()
