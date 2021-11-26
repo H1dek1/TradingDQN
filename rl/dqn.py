@@ -156,12 +156,16 @@ class DQN:
 
 
 
-    def learn(self, total_timesteps):
+    def learn(self, total_timesteps, eval_env=None, eval_interval=500):
         self._step_count = 0
         episode_count = 0
         history = {'epi_len': [], 'epi_rew': [], 'total_step': [], 'ave_loss': []}
 
         while True: # loop episodes
+            if eval_env is not None \
+                    and episode_count%eval_interval == 0:
+                self.test_episode(eval_env, deterministic=True, n_epi=episode_count)
+
             epi_len = 0
             epi_rew = 0.0
             loss_history =[]
@@ -196,9 +200,9 @@ class DQN:
                 #if done or step_count == total_timesteps:
                 if done:
                     if len(loss_history) != 0:
-                        print(f'Episode {episode_count}:  reward: {epi_rew:.3f}, remain step: {total_timesteps-self._step_count}, loss: {np.average(loss_history):.5f}')
+                        print(f'Epi {episode_count}: rew: {epi_rew:.3f}, remain step: {total_timesteps-self._step_count}, loss: {np.average(loss_history):.5f}')
                     else:
-                        print(f'Episode {episode_count}:  reward: {epi_rew:.3f}, remain step: {total_timesteps-self._step_count}')
+                        print(f'Epi {episode_count}: rew: {epi_rew:.3f}, remain step: {total_timesteps-self._step_count}')
                     break # from inside loop
 
             # each episode
@@ -216,13 +220,13 @@ class DQN:
 
         return history
 
-    def _decide_action(self, obs, episode_count):
+    def _decide_action(self, obs, episode_count, deterministic=False):
         if episode_count < self._eps_change_length:
             eps = self._initial_eps + (self._final_eps - self._initial_eps) * (episode_count/self._eps_change_length)
         else:
             eps = self._final_eps
 
-        if eps < np.random.rand():
+        if eps < np.random.rand() or deterministic:
             # greedy
             series_input = obs[0].reshape(1, -1)
             sub_input = np.array([obs[1]])
@@ -390,7 +394,7 @@ class DQN:
         action = np.argmax(Q_values)
         return action
 
-    def test_episode(self, eval_env):
+    def test_episode(self, eval_env, deterministic=True, n_epi=0):
         obs = eval_env.reset()
         done = False
         step_count = 0
@@ -401,7 +405,8 @@ class DQN:
 
         while not done:
             print('obs: ', obs[0][-1], obs[1])
-            action = self._greedy_action(obs)
+            #action = self._greedy_action(obs)
+            action = self._decide_action(obs, 0, deterministic=deterministic)
             print('action: ', action)
             prices.append(obs[0][-1])
             taken_actions.append(action)
@@ -414,15 +419,32 @@ class DQN:
             
         print('total_reward', total_reward)
         fig, ax = plt.subplots(1, 1, figsize=(10,8))
-        ax.set_ylim(-1.2, 1.2)
-        ax.plot(range(len(prices)), prices)
-        action_color = ['C{}'.format(i) for i in taken_actions]
-        ax.scatter(range(len(prices)), np.zeros(len(prices)), c=action_color)
-        ax.scatter(len(prices)/2.0-0.3, -10.8, c='C0', label='Hold')
-        ax.scatter(len(prices)/2.0+0.0, -10.8, c='C1', label='Buy')
-        ax.scatter(len(prices)/2.0+0.3, -10.8, c='C2', label='Sell')
+        ax.set_title(f'Reward = {total_reward}', fontsize=15)
+        ax.set_ylim(ymin=-0.2, ymax=2.2)
+        ax.plot(range(len(prices)), prices, zorder=1)
+        # action_color = ['C{}'.format(i) for i in taken_actions]
+        # ax.scatter(range(len(prices)), np.zeros(len(prices)), c=action_color)
+        for idx, action in enumerate(taken_actions):
+            if action < int((self._n_action-1)/2):
+                ax.bar(idx, 0.1*(action+1.0), width=0.8, color='C0', zorder=0)
+            elif action == int((self._n_action-1)/2):
+                ax.scatter(idx, 0, color='C1', zorder=0)
+            elif action > int((self._n_action-1)/2):
+                ax.bar(idx, 0.1*(action-int((self._n_action-1)/2)), width=0.8, color='C2', zorder=0)
+
+        ax.scatter(0, -100, c='C0', label='buy')
+        ax.scatter(0, -100, c='C1', label='hold')
+        ax.scatter(0, -100, c='C2', label='sell')
+
+        # for idx in range(self._n_action):
+        #     if idx < int((self._n_action-1)/2):
+        #         ax.scatter(idx, -100, c=f'C{idx}', label=f'buy {idx+1}')
+        #     elif idx == int((self._n_action-1)/2):
+        #         ax.scatter(idx, -100, c=f'C{idx}', label=f'hold')
+        #     elif idx > int((self._n_action-1)/2):
+        #         ax.scatter(idx, -100, c=f'C{idx}', label=f'sell {idx-self._n_action}')
         ax.legend(fontsize=15)
-        fig.savefig('test_episode.png')
+        fig.savefig(f'test_episode{n_epi}.png')
 
     def load(cls, model_path):
         pass

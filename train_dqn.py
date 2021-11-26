@@ -9,36 +9,35 @@ import simple_trading
 
 def main():
     window_length = 12
-    env = gym.make('SimpleTrading-v0', window_length=window_length)
-    #env.random_play()
-    #sys.exit()
+    n_share_max = 2
+    env = gym.make('SimpleTrading-v0', window_length=window_length, max_share=n_share_max, reward_gain=10.0, latent_gain=10.0)
+    # env.random_play()
+    # sys.exit()
 
     model = DQN(
             env=env, 
             use_target_network=True,
-            use_doubleDQN=True, 
+            use_doubleDQN=False, 
             use_dueling=True,
-            initial_eps=0.8,
+            initial_eps=1.0,
             target_update_interval=30000,
-            final_eps=0.05,
-            eps_change_length=1000,
-            learning_rate=0.01,
+            final_eps=0.02,
+            eps_change_length=3000,
+            learning_rate=0.003,
             gamma=0.99,
-
-            #learning_starts=1,
-            #update_interval=1,
-            #target_update_interval=1,
-            #replay_batch_size=4
             )
-    #eval_env = gym.make('SimpleTrading-v0', window_length=window_length)
-    #model.test_episode(eval_env)
-    #sys.exit()
 
-    history = model.learn(200000)
-    #history = model.learn(2000)
-    #model.save('models/sample_model')
+    eval_env = gym.make(
+            'SimpleTrading-v0',
+            window_length=window_length,
+            max_share=n_share_max,
+            reward_gain=10.0,
+            latent_gain=10.0
+            )
+
+    history = model.learn(400000, eval_env=eval_env, eval_interval=300)
+    model.save('models/sample_model')
     
-    eval_env = gym.make('SimpleTrading-v0', window_length=window_length)
     model.test_episode(eval_env)
     df_hist = pd.DataFrame.from_dict(history, orient='index').T                                                                                     
     df_hist.to_csv('history.csv')

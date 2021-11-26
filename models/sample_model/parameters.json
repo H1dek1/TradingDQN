@@ -1,13 +1,13 @@
 {
-  "learning_rate": 0.01,
-  "learned_steps": 2024,
-  "initial_eps": 0.8,
-  "final_eps": 0.05,
-  "eps_change_length": 1000,
+  "learning_rate": 0.003,
+  "learned_steps": 400048,
+  "initial_eps": 1.0,
+  "final_eps": 0.02,
+  "eps_change_length": 3000,
   "update_interval": 4,
-  "target_update_interval": 20000,
-  "use_target_network": false,
-  "use_doubleDQN": true,
+  "target_update_interval": 30000,
+  "use_target_network": true,
+  "use_doubleDQN": false,
   "gamma": 0.99,
   "n_replay_epoch": 1
 }
